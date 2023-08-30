@@ -56,10 +56,18 @@ if __name__ == "__main__":
         chat_lines = original_chat.split("\n")
 
         # Split chat into smaller chunks
-        chunk_size = 2048
+        chunk_size = 16
         chat_chunks = [chat_lines[i:i+chunk_size] for i in range(0, len(chat_lines), chunk_size)]
+
+        # Handle the last chunk if its size is smaller than chunk_size
+        if len(chat_chunks[-1]) < chunk_size:
+            last_chunk = chat_chunks.pop()
+            chat_chunks[-1].extend(last_chunk)
 
         for i, chunk in enumerate(chat_chunks):
             converted_chat = convert_chat("\n".join(chunk), prompter, responder, chunk_index=i+1)
-            with open(f"{save_file}.jsonl", "a") as f:
-                f.write(json.dumps(converted_chat) + "\n")
+            user_messages = sum(1 for msg in converted_chat["messages"] if msg["role"] == "user")
+            assistant_messages = sum(1 for msg in converted_chat["messages"] if msg["role"] == "assistant")
+            if user_messages >= 1 and assistant_messages >= 1:
+                with open(f"{save_file}.jsonl", "a") as f:
+                    f.write(json.dumps(converted_chat) + "\n")

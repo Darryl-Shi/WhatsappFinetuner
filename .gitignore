@@ -153,3 +153,4 @@ cython_debug/
 *.txt
 *.json
 *.jsonl
+.DS_Store
